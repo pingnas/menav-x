@@ -1,0 +1,86 @@
+name: Build and Deploy Site
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository to demo1
+        uses: actions/checkout@v5
+        with:
+          path: demo1 
+
+      - name: Checkout pingnas/menav-x to demo2
+        uses: actions/checkout@v5
+        with:
+          repository: pingnas/menav-x
+          path: demo2
+
+      - name: Conditionally copy files and folders
+        run: |
+          # --- 1. CNAME 文件复制逻辑 ---
+          CNAME_SOURCE="demo1/file/CNAME"
+          CNAME_DEST="demo2/assets/CNAME"
+          
+          echo "Checking for CNAME file at $CNAME_SOURCE"
+          if [ -f "$CNAME_SOURCE" ]; then
+            echo "CNAME file found. Copying to $CNAME_DEST..."
+            cp -pv "$CNAME_SOURCE" "$CNAME_DEST"
+            echo "CNAME copied successfully."
+          else
+            echo "CNAME file not found. Skipping CNAME copy."
+          fi
+          
+          echo "---"
+
+          # --- 2. user 文件夹复制逻辑 ---
+          USER_SOURCE="demo1/file/user"
+          USER_DEST="demo2/config/" 
+          
+          echo "Checking for user directory at $USER_SOURCE"
+          
+          # 使用 -d 检查目录是否存在
+          if [ -d "$USER_SOURCE" ]; then
+            echo "user directory found. Copying to $USER_DEST..."
+            
+            # 确保目标目录存在
+            mkdir -p "$USER_DEST" 
+            
+            # 使用 cp -r 递归复制整个文件夹
+            # 目标结构:demo2/config/user/
+            cp -rpv "$USER_SOURCE" "$USER_DEST" 
+            
+            echo "user folder copied successfully."
+          else
+            echo "user folder not found in demo1/file/. Skipping user folder copy."
+          fi
+
+          echo "---"  
+          
+      - name: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          
+      - name: pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: | 
+          cd demo2
+          pnpm i
+          pnpm run build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.PERSONAL_TOKEN }}
+          publish_dir: demo2/dist
+          external_repository: 你的用户名/你的page仓库
+          publish_branch: main

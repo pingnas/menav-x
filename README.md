@@ -106,9 +106,15 @@ categories:
 
 ```
 
-## 快速开始
+## 快速开始 （GitHub Pages方式）,其他部署方式自己参考，操作很简单
 
 ### 公开自己的配置
+
+效果:
+- https://github.com/pingnas/menav-x
+- https://pingnas.github.io/menav-x/
+
+
 
 1. Fork仓库:
    - 点击右上角的 Fork 按钮复制此仓库到您的账号
@@ -123,7 +129,25 @@ categories:
    - 在 "Build and deployment" 部分
    - Source: 选择 "GitHub Actions"
 
+
 自定义配置，`clone`自己的仓库到本地，添加个人`user`配置，上传后会自动更新pages
 
 
 ### 不公开自己配置
+
+效果：https://pingnas.github.io/menav-x-page/
+
+
+- 创建2个仓库，一个page仓库(公开)，一个config仓库(私有)，名字自定义，随便都行
+- page仓库只需要修改这个即可
+![alt text](img/README/image-2.png)
+
+- config仓库
+  - 使用本仓库`example`文件夹。
+  - 如果要自定义域名，就保留`CNAME`文件，并且修改为自己域名，怎么解析篇幅太长，自己搜。
+  - 自定义config只需要修改user文件夹内容，配置很简单
+  - `.github/workflows/build.yml`需要修改第85行，改成自己的用户名和仓库
+  - 去`https://github.com/settings/tokens`申请自己的token，在这里补上
+  ![alt text](img/README/image-3.png)
+  
+<h1>非常简单
