@@ -1,6 +1,16 @@
 # MeNav-X
 本项目基于  **https://github.com/rbetree/menav**  的二次开发,特此向以下原始项目团队及其团队致以最诚挚的谢意。
 
+## 版权与许可 (License & Copyright)
+
+本软件 MeNav-X 及其修改，根据 **GNU Affero General Public License Version 3 (AGPL-3.0)** 许可证条款发布。
+
+**原始项目版权：**
+Copyright (C) 2023 [rbetree](https://github.com/rbetree)
+
+**本项目版权：**
+Copyright (C) 2025 [pingnas](https://github.com/pingnas)
+
 # 介绍
 
 <div align="center">
