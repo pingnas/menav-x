@@ -446,11 +446,6 @@ function prepareRenderData(config) {
   // 为Handlebars模板特别准备navigationData数组
   renderData.navigationData = renderData.navigation;
 
-  // 确保social数据格式正确
-  if (Array.isArray(renderData.social)) {
-    renderData.socialLinks = renderData.social; // 兼容模板中的不同引用名
-  }
-
   return renderData;
 }
 
@@ -543,172 +538,8 @@ function generateNavigation(navigation, config) {
   }).join('\n');
 }
 
-// 生成网站卡片HTML
-function generateSiteCards(sites) {
-  if (!sites || !Array.isArray(sites) || sites.length === 0) {
-    return `<p class="empty-sites">暂无网站</p>`;
-  }
+ 
 
-  return sites.map(site => `
-                        <a href="${escapeHtml(site.url)}" class="site-card" title="${escapeHtml(site.name)} - ${escapeHtml(site.description || '')}">
-                            <i class="${escapeHtml(site.icon || 'fas fa-link')}"></i>
-                            <h3>${escapeHtml(site.name || '未命名站点')}</h3>
-                            <p>${escapeHtml(site.description || '')}</p>
-                        </a>`).join('\n');
-}
-
-// 生成分类板块
-function generateCategories(categories) {
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    return `
-                <section class="category">
-                    <h2><i class="fas fa-info-circle"></i> 暂无分类</h2>
-                    <p>请在配置文件中添加分类</p>
-                </section>`;
-  }
-
-  return categories.map(category => `
-                <section class="category" id="${escapeHtml(category.name)}">
-                    <h2><i class="${escapeHtml(category.icon)}"></i> ${escapeHtml(category.name)}</h2>
-                    <div class="sites-grid">
-                        ${generateSiteCards(category.sites)}
-                    </div>
-                </section>`).join('\n');
-}
-
-// 生成社交链接HTML
-function generateSocialLinks(social) {
-  if (!social || !Array.isArray(social) || social.length === 0) {
-    return '';
-  }
-
-  // 尝试使用Handlebars模板
-  try {
-    const socialLinksPath = path.join(process.cwd(), 'templates', 'components', 'social-links.hbs');
-    if (fs.existsSync(socialLinksPath)) {
-      const templateContent = fs.readFileSync(socialLinksPath, 'utf8');
-      const template = handlebars.compile(templateContent);
-      // 确保数据格式正确
-      return template(social); // 社交链接模板直接接收数组
-    }
-  } catch (error) {
-    console.error('Error rendering social-links template:', error);
-    // 出错时回退到原始生成方法
-  }
-
-  // 回退到原始生成方法
-  return social.map(link => `
-                <a href="${escapeHtml(link.url)}" class="nav-item" target="_blank">
-                    <div class="icon-container">
-                        <i class="${escapeHtml(link.icon || 'fas fa-link')}"></i>
-                    </div>
-                    <span class="nav-text">${escapeHtml(link.name || '社交链接')}</span>
-                    <i class="fas fa-external-link-alt external-icon"></i>
-                </a>`).join('\n');
-}
-
-// 生成页面内容（包括首页和其他页面）
-function generatePageContent(pageId, data) {
-  // 确保数据对象存在
-  if (!data) {
-    console.error(`Missing data for page: ${pageId}`);
-    return `
-                <div class="welcome-section">
-                    <h2>页面未配置</h2>
-                    <p class="subtitle">请配置 ${pageId} 页面</p>
-                </div>`;
-  }
-
-  // 首页使用profile数据，其他页面使用自身数据
-  if (pageId === 'home') {
-    const profile = data.profile || {};
-
-    return `
-                <div class="welcome-section">
-                    <h2>${escapeHtml(profile.title || '欢迎使用')}</h2>
-                    <h3>${escapeHtml(profile.subtitle || '个人导航站')}</h3>
-                    <p class="subtitle">${escapeHtml(profile.description || '快速访问您的常用网站')}</p>
-                </div>
-${generateCategories(data.categories)}`;
-  } else {
-    // 其他页面使用通用结构
-    const title = data.title || `${pageId} 页面`;
-    const subtitle = data.subtitle || '';
-    const categories = data.categories || [];
-
-    return `
-                <div class="welcome-section">
-                    <h2>${escapeHtml(title)}</h2>
-                    <p class="subtitle">${escapeHtml(subtitle)}</p>
-                </div>
-                ${generateCategories(categories)}`;
-  }
-}
-
-// 生成搜索结果页面
-function generateSearchResultsPage(config) {
-  // 获取所有导航页面ID
-  const pageIds = config.navigation.map(nav => nav.id);
-
-  // 生成所有页面的搜索结果区域
-  const searchSections = pageIds.map(pageId => {
-    // 根据页面ID获取对应的图标和名称
-    const navItem = config.navigation.find(nav => nav.id === pageId);
-    const icon = navItem ? navItem.icon : 'fas fa-file';
-    const name = navItem ? navItem.name : pageId;
-
-    return `
-                <section class="category search-section" data-section="${escapeHtml(pageId)}" style="display: none;">
-                    <h2><i class="${escapeHtml(icon)}"></i> ${escapeHtml(name)}匹配项</h2>
-                    <div class="sites-grid"></div>
-                </section>`;
-  }).join('\n');
-
-  return `
-            <!-- 搜索结果页 -->
-            <div class="page" id="search-results">
-                <div class="welcome-section">
-                    <h2>搜索结果</h2>
-                    <p class="subtitle">在所有页面中找到的匹配项</p>
-                </div>
-${searchSections}
-            </div>`;
-}
-
-// 生成Google Fonts链接
-function generateGoogleFontsLink(config) {
-  const fonts = config.fonts;
-  const googleFonts = [];
-
-  // 收集需要加载的Google字体
-  Object.values(fonts).forEach(font => {
-    if (font.source === 'google') {
-      const fontName = font.family.replace(/["']/g, '');
-      const fontWeight = font.weight || 400;
-      googleFonts.push(`family=${fontName}:wght@${fontWeight}`);
-    }
-  });
-
-  return googleFonts.length > 0
-    ? `<link href="https://fonts.googleapis.com/css2?${googleFonts.join('&')}&display=swap" rel="stylesheet">`
-    : '';
-}
-
-// 生成字体CSS变量
-function generateFontVariables(config) {
-  const fonts = config.fonts;
-  let css = ':root {\n';
-
-  Object.entries(fonts).forEach(([key, font]) => {
-    css += `    --font-${key}: ${font.family};\n`;
-    if (font.weight) {
-      css += `    --font-weight-${key}: ${font.weight};\n`;
-    }
-  });
-
-  css += '}';
-  return css;
-}
 
 /**
  * 渲染单个页面
@@ -747,8 +578,6 @@ function renderPage(pageId, config) {
     });
   }
 
-  // 确保socialLinks字段存在
-  data.socialLinks = Array.isArray(config.social) ? config.social : [];
 
   // 确保navigationData可用（针对模板使用）
   data.navigationData = data.navigation;
@@ -827,24 +656,15 @@ function generateHTML(config) {
     return navItem;
   });
 
-  // 准备Google Fonts链接
-  const googleFontsLink = generateGoogleFontsLink(config);
 
-  // 准备CSS字体变量
-  const fontVariables = generateFontVariables(config);
 
-  // 准备社交链接
-  const socialLinks = generateSocialLinks(config.social);
 
   // 使用主布局模板
   const layoutData = {
     ...config,
     pages,
-    googleFontsLink,
-    fontVariables,
     navigationData,
     currentYear,
-    socialLinks,
     navigation: generateNavigation(config.navigation, config), // 兼容旧版
     social: Array.isArray(config.social) ? config.social : [], // 兼容旧版
 
@@ -889,45 +709,7 @@ function copyDir(source, target, isRoot = false) {
 }
 // 复制静态文件
 function copyStaticFiles(config) {
-  // // 确保dist目录存在
-  // if (!fs.existsSync('dist')) {
-  //   fs.mkdirSync('dist', { recursive: true });
-  // }
 
-
-  //   // 复制CSS文件
-  //   try {
-  //     fs.copyFileSync('assets/style.css', 'dist/style.css');
-  //   } catch (e) {
-  //     console.error('Error copying style.css:', e);
-  //   }
-  //   try {
-  //     fs.copyFileSync('assets/font-awesome 6.7.2 all.min.css', 'dist/font-awesome 6.7.2 all.min.css');
-  //   } catch (e) {
-  //     console.error('Error copying font-awesome 6.7.2 all.min.css:', e);
-  //   }
-  //  try {
-  //     copyDir('assets/webfonts', 'dist/webfonts');
-  //   } catch (e) {
-  //     console.error('Error copying webfonts:', e);
-  //   }
-
-  //   try {
-  //     fs.copyFileSync('assets/pinyin-match.js', 'dist/pinyin-match.js');
-  //   } catch (e) {
-  //     console.error('Error copying pinyin-match.js:', e);
-  //   }
-
-  //   try {
-  //     fs.copyFileSync('assets/S6uyw4BMUTPHjx4wXg.woff2', 'dist/S6uyw4BMUTPHjx4wXg.woff2');
-  //   } catch (e) {
-  //     console.error('Error copying S6uyw4BMUTPHjx4wXg.woff2:', e);
-  //   }
-  //   try {
-  //     fs.copyFileSync('assets/S6uyw4BMUTPHjxAwXjeu.woff2', 'dist/S6uyw4BMUTPHjxAwXjeu.woff2');
-  //   } catch (e) {
-  //     console.error('Error copying S6uyw4BMUTPHjxAwXjeu.woff2:', e);
-  //   }
 
   try {
     copyDir('assets', 'dist', true);
@@ -935,28 +717,6 @@ function copyStaticFiles(config) {
     console.error('Error copying assets:', e);
   }
 
-
-  // 复制JavaScript文件
-  try {
-    fs.copyFileSync('src/script.js', 'dist/script.js');
-  } catch (e) {
-    console.error('Error copying script.js:', e);
-  }
-
-  // // 如果配置了favicon，确保文件存在并复制
-  // if (config.site.favicon) {
-  //   try {
-  //     if (fs.existsSync(`assets/${config.site.favicon}`)) {
-  //       fs.copyFileSync(`assets/${config.site.favicon}`, `dist/${path.basename(config.site.favicon)}`);
-  //     } else if (fs.existsSync(config.site.favicon)) {
-  //       fs.copyFileSync(config.site.favicon, `dist/${path.basename(config.site.favicon)}`);
-  //     } else {
-  //       console.warn(`Warning: Favicon file not found: ${config.site.favicon}`);
-  //     }
-  //   } catch (e) {
-  //     console.error('Error copying favicon:', e);
-  //   }
-  // }
 }
 
 // 主函数
@@ -987,17 +747,3 @@ function main() {
 }
 
 main();
-
-// 导出供测试使用的函数
-module.exports = {
-  loadConfig,
-  generateHTML,
-  copyStaticFiles,
-  generateNavigation,
-  generateCategories,
-  loadHandlebarsTemplates,
-  renderTemplate,
-  generateAllPagesHTML,
-  copyDir
-};
-

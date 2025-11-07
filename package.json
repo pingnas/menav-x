@@ -1,13 +1,11 @@
 {
   "name": "menav-x",
   "version": "1.0.0",
-  "description": "A personal navigation website",
-  "main": "src/generator.js",
+  "description": "A navigation website",
   "scripts": {
     "clean": "rm -rf dist",
     "generate": "node src/generator.js",
-    "runPlugin": "cd plugin && pnpm dev",
-    "minify": "node src/minify",
+    "minify": "tsx src/build/minify",
     "build1": "pnpm run clean && pnpm run generate",
     "build": "pnpm run clean && pnpm run generate && pnpm run minify",
     "dev": "pnpm run build1 && serve dist --listen 3001",
@@ -16,29 +14,17 @@
     "restructure": "node restructure.js",
     "import-bookmarks": "node src/bookmark-processor.js"
   },
-  "keywords": [
-    "navigation",
-    "website",
-    "personal"
-  ],
-  "license": "MIT",
-  "dependencies": {
-    "ansi-regex": "^6.0.1",
-    "ansi-styles": "^6.2.1",
-    "clean-css": "^5.3.3",
-    "color-convert": "^2.0.1",
-    "color-name": "^2.0.0",
-    "fs-extra": "^11.3.2",
-    "handlebars": "^4.7.8",
-    "has-flag": "^5.0.1",
-    "html-minifier-terser": "^7.2.0",
-    "js-yaml": "^4.1.0",
-    "mime-db": "^1.52.0",
-    "supports-color": "^9.4.0",
-    "terser": "^5.44.0",
-    "yaml": "^2.8.1"
-  },
   "devDependencies": {
-    "serve": "^14.2.1"
+    "js-yaml": "^4.1.0",
+    "handlebars": "^4.7.8",
+    "@types/clean-css": "^4.2.11",
+    "@types/fs-extra": "^11.0.4",
+    "@types/html-minifier-terser": "^7.0.2",
+    "clean-css": "^5.3.3",
+    "fs-extra": "^11.3.2",
+    "html-minifier-terser": "^7.2.0",
+    "serve": "^14.2.1",
+    "terser": "^5.44.0",
+    "tsx": "^4.20.6"
   }
 }

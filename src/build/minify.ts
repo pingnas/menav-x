@@ -1,8 +1,8 @@
-const fs = require('fs-extra');
-const path = require('path');
-const terser = require('terser');
-const htmlMinifier = require('html-minifier-terser');
-const CleanCSS = require('clean-css');
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import { minify as terserMinify, MinifyOptions, MinifyOutput } from 'terser';
+import { minify as htmlMinifierMinify, Options as HtmlMinifierOptions } from 'html-minifier-terser';
+import CleanCSS from 'clean-css';
 
 // --- 核心配置 ---
 const TARGET_DIR = 'dist';
@@ -19,7 +19,7 @@ const FAVICON_REGEX = /(<link\s+[^>]*?rel="(?:icon|shortcut\s+icon)"[^>]*?href="
 // 正则表达式用于匹配 CSS 文件中的 url() 引用 (仅针对字体)
 const CSS_URL_REGEX = /url\(['"]?([^'"\)]+\.(?:ttf|woff2))['"]?\)/gi;
 
-const MIME_MAP = {
+const MIME_MAP: { [key: string]: string } = {
     '.ico': 'image/x-icon',
     '.ttf': 'font/ttf',
     '.woff2': 'font/woff2',
@@ -27,8 +27,10 @@ const MIME_MAP = {
 
 /**
  * 将二进制文件转换为 Base64 Data URI
+ * @param filePath 文件的完整路径
+ * @returns Base64 Data URI 字符串或 null
  */
-async function convertAssetToBase64(filePath) {
+const convertAssetToBase64 = async (filePath: string) => {
     const ext = path.extname(filePath).toLowerCase();
     const mimeType = MIME_MAP[ext];
 
@@ -38,31 +40,39 @@ async function convertAssetToBase64(filePath) {
         const buffer = await fs.readFile(filePath);
         return `data:${mimeType};base64,${buffer.toString('base64')}`;
     } catch (error) {
-        console.error(`❌ Base64 转换失败: ${filePath}`, error.message);
+        console.error(`❌ Base64 转换失败: ${filePath}`, error);
         return null;
     }
 }
 
 /**
  * 混淆/压缩 JS 代码
+ * @param code 原始 JS 代码
+ * @returns 压缩后的代码字符串或 null
  */
-async function minifyJsCode(code) {
-    const result = await terser.minify(code, {
+const minifyJsCode = async (code: string) => {
+    const options: MinifyOptions = {
         compress: true,
         mangle: true,
         output: { comments: false },
-    });
-    if (result.error) {
-        console.error('❌ JS 混淆失败:', result.error);
+    };
+
+    try {
+        const result: MinifyOutput = await terserMinify(code, options);
+        return result.code || null;
+    } catch (error) {
+        console.error('❌ JS 混淆失败:', error);
         return null;
     }
-    return result.code;
 }
 
 /**
  * 优化 CSS 代码 (替换字体引用, 压缩)
+ * @param css 原始 CSS 代码
+ * @param base64Assets 包含 Base64 URI 的资源 Map
+ * @returns 压缩后的代码字符串或 null
  */
-function minifyCssCode(css, base64Assets) {
+const minifyCssCode = (css: string, base64Assets: Map<string, string>) => {
     // 1. 替换 CSS 中的字体文件引用为 Base64 Data URI
     let modifiedCss = css.replace(CSS_URL_REGEX, (match, urlPath) => {
         const fullPath = path.join(TARGET_DIR, urlPath);
@@ -86,8 +96,15 @@ function minifyCssCode(css, base64Assets) {
 
 /**
  * 核心合并与优化 HTML 文件
+ * @param filePath HTML 文件的完整路径
+ * @param externalJsCss 包含 JS/CSS 压缩代码的 Map
+ * @param faviconBase64 Favicon 的 Base64 URI 或 null
  */
-async function embedAndMinifyHtml(filePath, externalJsCss, faviconBase64) {
+const embedAndMinifyHtml = async (
+    filePath: string,
+    externalJsCss: Map<string, string>,
+    faviconBase64: string | null
+) => {
     let html = await fs.readFile(filePath, 'utf8');
 
     // 1. 替换外部 JS 文件引用为内联代码
@@ -115,12 +132,14 @@ async function embedAndMinifyHtml(filePath, externalJsCss, faviconBase64) {
     }
 
     // 4. 优化 HTML 本身 (包括内联 JS/CSS 再次压缩)
-    const result = await htmlMinifier.minify(html, {
+    const options: HtmlMinifierOptions = {
         collapseWhitespace: true,
         removeComments: true,
         minifyJS: true,
         minifyCSS: true,
-    });
+    };
+
+    const result = await htmlMinifierMinify(html, options);
 
     await fs.writeFile(filePath, result);
     console.log(`\n✅ HTML 合并与优化完成: ${filePath}`);
@@ -129,7 +148,7 @@ async function embedAndMinifyHtml(filePath, externalJsCss, faviconBase64) {
 /**
  * 主函数：遍历目录并执行操作
  */
-async function runMinification() {
+const runMinification = async () => {
     console.log(`开始对目录进行原地处理: ${TARGET_DIR} ...`);
 
     if (!fs.existsSync(TARGET_DIR) || !fs.existsSync(INDEX_HTML)) {
@@ -137,9 +156,9 @@ async function runMinification() {
         return;
     }
 
-    const base64Assets = new Map(); // {fullPath: Base64URI}
-    const externalJsCss = new Map(); // {fullPath: minifiedCode}
-    const assetsToDelete = [];
+    const base64Assets: Map<string, string> = new Map(); // {fullPath: Base64URI}
+    const externalJsCss: Map<string, string> = new Map(); // {fullPath: minifiedCode}
+    const assetsToDelete: string[] = [];
 
     // --- 1. 收集和处理所有外部资源 ---
     const files = await fs.readdir(TARGET_DIR, { withFileTypes: true });
@@ -186,6 +205,6 @@ async function runMinification() {
     console.log(`✨ 所有指定文件原地处理完毕！目录 ${TARGET_DIR} 已实现单文件打包。`);
 }
 
-runMinification().catch(err => {
+runMinification().catch((err) => {
     console.error('致命错误:', err);
 });
