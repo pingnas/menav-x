@@ -1,0 +1,50 @@
+title: 技术文章
+template: normal
+
+categories:
+  - name: 最新文章
+    sites:
+      - name: Vue3最佳实践
+        description: Vue3组合式API的使用技巧
+        url: https://cn.vuejs.org/guide/extras/composition-api-faq 
+  - name: 前端开发
+    sites:
+      - name: React Hooks深度解析
+        description: useState 和 useEffect 的底层机制与优化
+        url: https://zh-hans.legacy.reactjs.org/docs/hooks-effect.html 
+      - name: TypeScript进阶：泛型与工具类型
+        description: 如何利用高级TypeScript特性提升代码健壮性
+        url: https://typescript.bootcss.com/generics.html 
+      - name: Web性能优化：Lighthouse得分提升指南
+        description: 从加载到交互，全面提升用户体验的关键指标
+        url: https://developer.chrome.com/docs/lighthouse/performance/performance-scoring?hl=zh-cn 
+      - name: CSS新特性：容器查询与层叠层
+        description: 响应式设计的新篇章：更灵活、更可维护的CSS
+        url: https://web.dev/blog/how-to-use-container-queries-now?hl=zh-cn 
+  - name: 后端与架构
+    sites:
+      - name: Go语言并发编程实践
+        description: Goroutine与Channel的高效应用模式
+        url: https://golang.google.cn/doc/effective_go#concurrency 
+      - name: 微服务架构设计：服务拆分与通信
+        description: 如何合理划分微服务边界及选择合适的通信方式
+        url: https://www.infoq.cn/article/4iqgkvhpoxdi0ysidjae 
+      - name: Docker与Kubernetes实战入门
+        description: 容器化部署与集群管理的CI/CD流程
+        url: https://kuboard.cn/learning/ 
+  - name: 人工智能与算法
+    sites:
+      - name: Transformer模型原理详解
+        description: 注意力机制在自然语言处理中的应用与发展
+        url: https://www.infoq.cn/article/lteuoi30r4ueyy740ht2 
+      - name: 机器学习模型部署：从训练到生产
+        description: 使用Flask/FastAPI和ONNX进行模型推理服务
+        url: https://www.aliyun.com/sswb/694699.html 
+  - name: 数据库与DevOps
+    sites:
+      - name: PostgreSQL高级特性：索引与性能调优
+        description: B-tree、Hash与Gin索引的选择与优化技巧
+        url: https://www.modb.pro/db/389020 
+      - name: 拥抱GitOps：使用ArgoCD实现声明式部署
+        description: 基于Git仓库的自动化基础设施与应用部署流程
+        url: https://kubesphere.io/zh/blogs/kubesphere-argocd/ 

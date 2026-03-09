@@ -1,0 +1,30 @@
+{
+  "name": "menav-x",
+  "version": "1.0.0",
+  "description": "A navigation website",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "generate": "node src/generator.js",
+    "minify": "tsx src/build/minify",
+    "build1": "pnpm run clean && pnpm run generate",
+    "build": "pnpm run clean && pnpm run generate && pnpm run minify",
+    "dev": "pnpm run build1 && serve dist --listen 3001",
+    "dev1": "serve dist",
+    "serve": "pnpm run build && serve dist --listen 3001",
+    "restructure": "node restructure.js",
+    "import-bookmarks": "node src/bookmark-processor.js"
+  },
+  "devDependencies": {
+    "js-yaml": "^4.1.0",
+    "handlebars": "^4.7.8",
+    "@types/clean-css": "^4.2.11",
+    "@types/fs-extra": "^11.0.4",
+    "@types/html-minifier-terser": "^7.0.2",
+    "clean-css": "^5.3.3",
+    "fs-extra": "^11.3.2",
+    "html-minifier-terser": "^7.2.0",
+    "serve": "^14.2.1",
+    "terser": "^5.44.0",
+    "tsx": "^4.20.6"
+  }
+}
